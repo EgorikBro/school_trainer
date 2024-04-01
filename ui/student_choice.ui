@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>400</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: #43766C</string>
+  </property>
+  <widget class="QPushButton" name="backBtn">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #F8FAE5;
+font: 13pt &quot;MS Sans Serif&quot;;
+color: #B19470;
+font-weight: 600;
+border-radius: 8px;
+border: 2px solid #B19470;
+padding: 5px 15px;
+margin-top: 0px;
+outline: 0px;
+hover: { background-color: red };
+pressed: { background-color: rgb(0, 255, 0)}</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../pictures/icon6.png</normaloff>../pictures/icon6.png</iconset>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="exampleBtn">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>70</y>
+     <width>211</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #F8FAE5;
+font: 13pt &quot;MS Sans Serif&quot;;
+color: #B19470;
+font-weight: 600;
+border-radius: 8px;
+border: 2px solid #B19470;
+margin-top: 0px;
+outline: 0px;
+hover: { background-color: red };
+pressed: { background-color: rgb(0, 255, 0)}</string>
+   </property>
+   <property name="text">
+    <string>Пример теста</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="myTestsBtn">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>130</y>
+     <width>211</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #F8FAE5;
+font: 13pt &quot;MS Sans Serif&quot;;
+color: #B19470;
+font-weight: 600;
+border-radius: 8px;
+border: 2px solid #B19470;
+margin-top: 0px;
+outline: 0px;
+hover: { background-color: red };
+pressed: { background-color: rgb(0, 255, 0)}</string>
+   </property>
+   <property name="text">
+    <string>Мои тесты</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="teachersTestBtn">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>190</y>
+     <width>211</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #F8FAE5;
+font: 13pt &quot;MS Sans Serif&quot;;
+color: #B19470;
+font-weight: 600;
+border-radius: 8px;
+border: 2px solid #B19470;
+margin-top: 0px;
+outline: 0px;
+hover: { background-color: red };
+pressed: { background-color: rgb(0, 255, 0)}</string>
+   </property>
+   <property name="text">
+    <string>Тест от учителя</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
