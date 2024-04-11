@@ -1,0 +1,4 @@
+Инфузория туфелька - data/biology/pictures/infuzoria.jpg
+Амёба - data/biology/pictures/ameba.jpg
+Гидра - data/biology/pictures/gidra.jpg
+Эвглена зелёная - data/biology/pictures/evglena.jpg

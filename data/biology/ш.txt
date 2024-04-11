@@ -1,0 +1,4 @@
+Егорик - data/biology/pictures/user1.jpg
+Дисик - data/biology/pictures/user4.jpg
+Сахис - data/biology/pictures/User 18.jpg
+Глебик - data/biology/pictures/User 04.jpg

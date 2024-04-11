@@ -1,0 +1,4 @@
+Польша - data/geography/pictures/poland.png
+Германия - data/geography/pictures/germany.jpg
+Россия - data/geography/pictures/russia.jpg
+Индия - data/geography/pictures/india.png

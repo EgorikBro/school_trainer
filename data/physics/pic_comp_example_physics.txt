@@ -1,0 +1,4 @@
+Динамометр - data/physics/pictures/dinamometr.jpeg
+Амперметр - data/physics/pictures/ampermetr.jpg
+Вольтметр - data/physics/pictures/Voltmeeter.jpg
+Термометр - data/physics/pictures/termometr.jpg

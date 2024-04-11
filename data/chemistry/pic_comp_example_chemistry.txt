@@ -1,0 +1,4 @@
+Вода - data/chemistry/pictures/water.png
+Углекислый газ - data/chemistry/pictures/gaz.png
+Аммиак - data/chemistry/pictures/ammiak.jpg
+Бензин - data/chemistry/pictures/benzin.jpg

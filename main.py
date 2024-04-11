@@ -8,24 +8,26 @@ import pymorphy3
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QLineEdit, QFileDialog, QAbstractItemView
 
-from main_menu import MainMenuUi
-from entrance import EntranceUi
-from registration import RegistrationUi
-from login import LoginUi
-from student_choice import StudentChoiceUi
-from profile import ProfileUi
-from profile_edit import ProfileEditUi
-from test_type import TestTypeUi
-from comparison import ComparisonUi
-from result import ResultUi
-from definition import DefinitionUi
-from answers import AnswersUi
-from test import TestUi
-from picture_comparison import PictureComparisonUi
-from my_tests import MyTestsUi
-from term_create import TermCreateUi
-from create_test_student import CreateTestStudentUi
-from finish import FinishUi
+from data.main_menu import MainMenuUi
+from data.entrance import EntranceUi
+from data.registration import RegistrationUi
+from data.login import LoginUi
+from data.student_choice import StudentChoiceUi
+from data.profile import ProfileUi
+from data.profile_edit import ProfileEditUi
+from data.test_type import TestTypeUi
+from data.comparison import ComparisonUi
+from data.result import ResultUi
+from data.definition import DefinitionUi
+from data.answers import AnswersUi
+from data.test import TestUi
+from data.picture_comparison import PictureComparisonUi
+from data.my_tests import MyTestsUi
+from data.term_create import TermCreateUi
+from data.create_test_student import CreateTestStudentUi
+from data.finish import FinishUi
+from data.test_editor import TestEditorUi
+from data.picture_comparison_editor import PictureComparisonEditorUi
 
 morph = pymorphy3.MorphAnalyzer()
 
@@ -75,7 +77,7 @@ class Login(QWidget, LoginUi):
 
     def login(self):
         nickname = None
-        with sqlite3.connect('trainer_db') as con:
+        with sqlite3.connect('data/trainer_db') as con:
             if self.loginEdit.text() == '' or self.passwordEdit.text() == '':
                 self.messageLabel.setText('Введите логин и пароль!')
             else:
@@ -119,7 +121,7 @@ class Registration(QWidget, RegistrationUi):
         if self.loginEdit.text() == '' or self.passwordEdit.text() == '':
             self.messageLabel.setText('Введите логин и пароль!')
         else:
-            with sqlite3.connect('trainer_db') as con:
+            with sqlite3.connect('data/trainer_db') as con:
                 check = con.cursor().execute("""SELECT id FROM user
                  WHERE nickname = ?""", (self.loginEdit.text(),)).fetchone()
                 if check is not None:
@@ -149,7 +151,7 @@ class Main(QMainWindow, MainMenuUi):
         self.setupUi(self)
         self.accountBtn.setText(self.nickname)
         self.accountBtn.adjustSize()
-        with sqlite3.connect('trainer_db') as con:
+        with sqlite3.connect('data/trainer_db') as con:
             avatar = con.cursor().execute("""SELECT avatar FROM user
                  WHERE nickname = ?""", (self.nickname,)).fetchone()[0]
             if avatar is not None:
@@ -234,7 +236,7 @@ class MyTests(QWidget, MyTestsUi):
 
     def fill(self):
         self.model = QtCore.QStringListModel(self)
-        with sqlite3.connect('trainer_db') as con:
+        with sqlite3.connect('data/trainer_db') as con:
             tests = con.cursor().execute('''SELECT test_name FROM student_tests WHERE 
             author = ? AND subject = ?''', (self.nickname, self.subject)).fetchall()
             if len(tests) > 0:
@@ -260,7 +262,7 @@ class MyTests(QWidget, MyTestsUi):
         self.create_test_student.show()
 
     def open_test(self):
-        with sqlite3.connect('trainer_db') as con:
+        with sqlite3.connect('data/trainer_db') as con:
             data = con.cursor().execute('''SELECT test_type, reversed FROM student_tests WHERE 
                 test_name = ?''', (self.listView.currentIndex().data(),)).fetchone()
             if len(data) > 1:
@@ -310,27 +312,29 @@ class CreateTestStudent(QWidget, CreateTestStudentUi):
             for i in self.buttonGroup.buttons():
                 if i.isChecked():
                     self.test_type = i.text()
-            with sqlite3.connect('trainer_db') as con:
+            with sqlite3.connect('data/trainer_db') as con:
                 check = con.cursor().execute(f"""SELECT id FROM student_tests 
                 WHERE test_name like '{self.lineEdit.text()}%' AND author = ?""", (self.nickname,)).fetchall()
                 if len(check) > 0:
                     self.test_name = f'{self.lineEdit.text()}_{len(check) + 1}'
-                    print(self.test_name)
-                    file = open(f'{self.subject}/{self.lineEdit.text()}_{len(check) + 1}.txt', 'w+')
+                    file = open(f'data/{self.subject}/{self.lineEdit.text()}_{len(check) + 1}.txt', 'w+')
                     file.close()
                 else:
                     self.test_name = self.lineEdit.text()
-                    print(self.test_name)
-                    file = open(f'{self.subject}/{self.lineEdit.text()}.txt', 'w+')
+                    file = open(f'data/{self.subject}/{self.lineEdit.text()}.txt', 'w+')
                     file.close()
                 if self.test_type == 'Сопоставление термин-определение' or self.test_type == 'Написание определения':
                     self.term_create = TermCreate(self.nickname, self.subject, self.test_name, self.test_type)
                     self.close()
                     self.term_create.show()
                 elif self.test_type == 'Тест с вариантами ответа':
-                    pass
+                    self.test_editor = TestEditor(self.nickname, self.subject, self.test_name)
+                    self.close()
+                    self.test_editor.show()
                 else:
-                    pass
+                    self.pic_comp_editor = PictureComparisonEditor(self.nickname, self.subject, self.test_name)
+                    self.close()
+                    self.pic_comp_editor.show()
         else:
             self.messageLabel.setText('Введите название теста')
 
@@ -352,25 +356,23 @@ class TermCreate(QWidget, TermCreateUi):
 
     def back(self):
         self.create_test_student = CreateTestStudent(self.nickname, self.subject)
-        os.remove(f'{self.subject}/{self.test_name}.txt')
+        os.remove(f'data/{self.subject}/{self.test_name}.txt')
         self.close()
         self.create_test_student.show()
 
     def add_term(self):
         if len(self.textEdit_1.toPlainText()) > 0 and len(self.textEdit_2.toPlainText()) > 0:
-            if '\n' not in self.textEdit_1.toPlainText() and '\n' not in self.textEdit_2.toPlainText():
-                with open(f'{self.subject}/{self.test_name}.txt', 'a+', encoding='utf-8') as f:
-                    f.write(f'{self.textEdit_1.toPlainText()} - {self.textEdit_2.toPlainText()}\n')
-                    self.messageLabel.setText('')
-                    self.textEdit_1.setText('')
-                    self.textEdit_2.setText('')
-            else:
-                self.messageLabel.setText('Поля должны содержать только одну строку!')
+            with open(f'data/{self.subject}/{self.test_name}.txt', 'a+', encoding='utf-8') as f:
+                f.write(
+                    f'''{' '.join(self.textEdit_1.toPlainText().split('\n'))} - {' '.join(self.textEdit_2.toPlainText().split('\n'))}\n''')
+                self.messageLabel.setText('')
+                self.textEdit_1.setText('')
+                self.textEdit_2.setText('')
         else:
             self.messageLabel.setText('Поля не заполнены!')
 
     def end_creating(self):
-        with open(f'{self.subject}/{self.test_name}.txt', 'r', encoding='utf-8') as f:
+        with open(f'data/{self.subject}/{self.test_name}.txt', 'r', encoding='utf-8') as f:
             if len(f.readlines()) >= 4:
                 self.finish = Finish(self.nickname, self.test_name, self.test_type, self.subject)
                 self.close()
@@ -399,7 +401,7 @@ class Finish(QWidget, FinishUi):
                     self.reverse = 0
                 else:
                     self.reverse = 1
-        with sqlite3.connect('trainer_db') as con:
+        with sqlite3.connect('data/trainer_db') as con:
             con.cursor().execute("""INSERT INTO student_tests
                                 (author, test_name, test_type, subject, reversed)
                                 VALUES (?, ?, ?, ?, ?);""",
@@ -408,6 +410,129 @@ class Finish(QWidget, FinishUi):
         self.close()
         self.my_tests.show()
 
+
+class TestEditor(QWidget, TestEditorUi):
+    def __init__(self, nickname, subject, test_name):
+        super(TestEditor, self).__init__()
+        self.nickname = nickname
+        self.subject = subject
+        self.test_name = test_name
+        self.setupUi(self)
+        self.click_btn()
+
+    def click_btn(self):
+        self.backBtn.clicked.connect(self.back)
+        self.pushButton_2.clicked.connect(self.add_question)
+        self.pushButton.clicked.connect(self.end_creating)
+
+    def back(self):
+        self.create_test_student = CreateTestStudent(self.nickname, self.subject)
+        os.remove(f'data/{self.subject}/{self.test_name}.txt')
+        self.close()
+        self.create_test_student.show()
+
+    def add_question(self):
+        if len(self.questionText.toPlainText()) > 0 and len(self.textEdit_1.toPlainText()) > 0 and len(
+                self.textEdit_2.toPlainText()) > 0 and len(self.textEdit_3.toPlainText()) > 0 and len(
+                self.textEdit_4.toPlainText()) > 0:
+            if any(map(lambda x: x.isChecked(), self.buttonGroup.buttons())):
+                with open(f'data/{self.subject}/{self.test_name}.txt', 'a+', encoding='utf-8') as f:
+                    texts = [' '.join(self.textEdit_1.toPlainText().split('\n')),
+                             ' '.join(self.textEdit_2.toPlainText().split('\n')),
+                             ' '.join(self.textEdit_3.toPlainText().split('\n')),
+                             ' '.join(self.textEdit_4.toPlainText().split('\n'))]
+                    for i in self.buttonGroup.buttons():
+                        if i.isChecked():
+                            ans = texts[int(i.objectName()[-1]) - 1]
+                            texts.pop(int(i.objectName()[-1]) - 1)
+                    f.write(
+                        f'''{' '.join(self.questionText.toPlainText().split('\n'))} - {ans} | {texts[0]} | {texts[1]} | {texts[2]}\n''')
+                    self.messageLabel.setText('')
+                    self.textEdit_1.setText('')
+                    self.textEdit_2.setText('')
+                    self.textEdit_3.setText('')
+                    self.textEdit_4.setText('')
+                    self.questionText.setText('')
+            else:
+                self.messageLabel.setText('Выберите верный вариант ответа!')
+        else:
+            self.messageLabel.setText('Заполните все поля!')
+
+    def end_creating(self):
+        with open(f'data/{self.subject}/{self.test_name}.txt', 'r', encoding='utf-8') as f:
+            if len(f.readlines()) > 0:
+                with sqlite3.connect('data/trainer_db') as con:
+                    con.cursor().execute("""INSERT INTO student_tests
+                                        (author, test_name, test_type, subject)
+                                        VALUES (?, ?, ?, ?);""",
+                                         (self.nickname, self.test_name, 'Тест с вариантами ответа', self.subject))
+                self.my_tests = MyTests(self.nickname, self.subject)
+                self.close()
+                self.my_tests.show()
+            else:
+                self.messageLabel.setText('Добавьте хотя бы 1 вопрос!')
+
+
+class PictureComparisonEditor(QWidget, PictureComparisonEditorUi):
+    def __init__(self, nickname, subject, test_name):
+        super(PictureComparisonEditor, self).__init__()
+        self.nickname = nickname
+        self.subject = subject
+        self.test_name = test_name
+        self.setupUi(self)
+        self.click_btn()
+
+    def click_btn(self):
+        self.backBtn.clicked.connect(self.back)
+        self.pushButton_2.clicked.connect(self.add_exercise)
+        self.pushButton.clicked.connect(self.end_creating)
+        self.addPictureBtn.clicked.connect(self.add_picture)
+
+    def back(self):
+        self.create_test_student = CreateTestStudent(self.nickname, self.subject)
+        os.remove(f'data/{self.subject}/{self.test_name}.txt')
+        self.close()
+        self.create_test_student.show()
+
+    def add_picture(self):
+        try:
+            pic = QFileDialog.getOpenFileName(
+                self, 'Выбрать картинку', '',
+                'Картинка (*.jpg);;Картинка (*.png)')[0]
+            self.pic = f'data/{self.subject}/pictures/{pic.split("/")[-1]}'
+            shutil.copy(pic, self.pic)
+            pixmap = QtGui.QPixmap(self.pic)
+            w, h = pixmap.size().width(), pixmap.size().height()
+            self.pictureLabel.resize(int(160 / h * w), 160)
+            self.addPictureBtn.resize(int(160 / h * w), 160)
+            self.pictureLabel.setPixmap(pixmap)
+        except FileNotFoundError:
+            self.messageLabel.setText('Картинка не найдена')
+
+    def add_exercise(self):
+        if len(self.textEdit_1.toPlainText()) > 0 and self.pictureLabel.pixmap():
+            with open(f'data/{self.subject}/{self.test_name}.txt', 'a+', encoding='utf-8') as f:
+                f.write(
+                    f'''{' '.join(self.textEdit_1.toPlainText().split('\n'))} - {self.pic}\n''')
+                self.messageLabel.setText('')
+                self.textEdit_1.setText('')
+                self.pictureLabel.clear()
+        else:
+            self.messageLabel.setText('Заполните поля!')
+
+    def end_creating(self):
+        with open(f'data/{self.subject}/{self.test_name}.txt', 'r', encoding='utf-8') as f:
+            if len(f.readlines()) >= 4:
+                with sqlite3.connect('data/trainer_db') as con:
+                    con.cursor().execute("""INSERT INTO student_tests
+                                        (author, test_name, test_type, subject)
+                                        VALUES (?, ?, ?, ?);""",
+                                         (self.nickname, self.test_name, 'Сопоставление с картинками', self.subject))
+                self.my_tests = MyTests(self.nickname, self.subject)
+                self.close()
+                self.my_tests.show()
+            else:
+                self.messageLabel.setText('Добавьте минимум 4 картинки!')
 
 
 class TestType(QWidget, TestTypeUi):
@@ -456,7 +581,7 @@ class Profile(QWidget, ProfileUi):
         super(Profile, self).__init__()
         self.nickname = nickname
         self.setupUi(self)
-        with sqlite3.connect('trainer_db') as con:
+        with sqlite3.connect('data/trainer_db') as con:
             data = con.cursor().execute("""SELECT avatar, status FROM user
                  WHERE nickname = ?""", (self.nickname,)).fetchone()
             if data[0] is not None:
@@ -494,7 +619,7 @@ class ProfileEdit(QWidget, ProfileEditUi):
         self.nickname = nickname
         self.setupUi(self)
         self.nameEdit.setText(self.nickname)
-        with sqlite3.connect('trainer_db') as con:
+        with sqlite3.connect('data/trainer_db') as con:
             data = con.cursor().execute("""SELECT password, avatar FROM user
              WHERE nickname = ?""", (self.nickname,)).fetchone()
             password = data[0]
@@ -527,7 +652,7 @@ class ProfileEdit(QWidget, ProfileEditUi):
             avatar = QFileDialog.getOpenFileName(
                 self, 'Выбрать картинку', '',
                 'Картинка (*.jpg);;Картинка (*.png)')[0]
-            self.avatar = f'avatars/{avatar.split("/")[-1]}'
+            self.avatar = f'data/avatars/{avatar.split("/")[-1]}'
             shutil.copy(avatar, self.avatar)
             self.avatarLabel.setPixmap(QtGui.QPixmap(self.avatar))
         except FileNotFoundError:
@@ -537,7 +662,7 @@ class ProfileEdit(QWidget, ProfileEditUi):
         if self.nameEdit.text() == '' or self.passwordEdit.text() == '':
             self.messageLabel.setText('Введите логин и пароль!')
         else:
-            with sqlite3.connect('trainer_db') as con:
+            with sqlite3.connect('data/trainer_db') as con:
                 if self.nameEdit.text() == self.nickname:
                     check = None
                 else:
@@ -566,7 +691,7 @@ class Comparison(QWidget, ComparisonUi):
         self.ans_field = None
         self.right = 0
         self.setupUi(self)
-        with open(f'{self.subject}/{self.name}.txt', encoding='utf-8') as f:
+        with open(f'data/{self.subject}/{self.name}.txt', encoding='utf-8') as f:
             self.f = list(map(lambda x: x.rstrip().split(' - '), f.readlines()))
             self.f1 = self.f.copy()
         self.fill_fields()
@@ -633,7 +758,7 @@ class Definition(QWidget, DefinitionUi):
         self.reverse = reverse
         self.right = 0
         self.setupUi(self)
-        with open(f'{self.subject}/{self.name}.txt', encoding='utf-8') as f:
+        with open(f'data/{self.subject}/{self.name}.txt', encoding='utf-8') as f:
             self.f = list(map(lambda x: x.rstrip().split(' - '), f.readlines()))
         self.total = len(self.f)
         self.fill_fields()
@@ -711,7 +836,7 @@ class Test(QWidget, TestUi):
         self.name = name
         self.right = 0
         self.setupUi(self)
-        with open(f'{self.subject}/{self.name}.txt', encoding='utf-8') as f:
+        with open(f'data/{self.subject}/{self.name}.txt', encoding='utf-8') as f:
             self.f = list(map(lambda x: x.rstrip().split(' - '), f.readlines()))
         self.total = len(self.f)
         self.fill_fields()
@@ -766,7 +891,7 @@ class PictureComparison(QWidget, PictureComparisonUi):
         self.ans_field = None
         self.right = 0
         self.setupUi(self)
-        with open(f'{self.subject}/{self.name}.txt', encoding='utf-8') as f:
+        with open(f'data/{self.subject}/{self.name}.txt', encoding='utf-8') as f:
             self.f = list(map(lambda x: x.rstrip().split(' - '), f.readlines()))
             self.f1 = self.f.copy()
         self.fill_fields()
@@ -797,8 +922,9 @@ class PictureComparison(QWidget, PictureComparisonUi):
         self.ans_field.resize(int(160 / h * w), 160)
         self.ans_field.setPixmap(self.pixmap)
         fields.remove(self.ans_field)
-        for i in random.choices(f2, k=3):
-            pixmap = QtGui.QPixmap(i[1])
+        random.shuffle(f2)
+        for i in range(3):
+            pixmap = QtGui.QPixmap(f2[i][1])
             w, h = pixmap.size().width(), pixmap.size().height()
             widths.append(int(160 / h * w))
             fields[0].resize(int(160 / h * w), 160)
@@ -833,7 +959,7 @@ class Result(QWidget, ResultUi):
         self.name = name
         self.right = right
         self.total = total
-        with open(f'{self.subject}/{self.name}.txt', encoding='utf-8') as f:
+        with open(f'data/{self.subject}/{self.name}.txt', encoding='utf-8') as f:
             self.f = list(map(lambda x: x.rstrip(), f.readlines()))
         self.setupUi(self)
         self.fill()
